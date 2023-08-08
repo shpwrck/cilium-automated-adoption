@@ -1,5 +1,6 @@
 # Automated Cilium Migration
 
+## Prerequisite Setup
 1. Deploy Manager Instance
 1. Install CNI Plugins
 ```
@@ -23,6 +24,8 @@ kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/
 ```
 curl -sfL https://get.k3s.io | sh -s - agent --server $SERVER_URL --token $TOKEN
 ```
+
+## Install Migration Tools
 1. Install Kustomize
 ```
 curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
@@ -75,6 +78,57 @@ spec:
 EOF
 ```
 
+##Perform Migration
+1. Apply Plan:
+```
+cat <<EOF | kubectl apply -f -
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: cilium
+  namespace: system-upgrade
+type: Opaque
+stringData:
+  migrate.sh: |
+    #!/bin/sh -xe
+    if /opt/k3s kubectl label node $SYSTEM_UPGRADE_NODE_NAME 'io.cilium.migration/cilium-default=true' | grep "node/$SYSTEM_UPGRADE_NODE_NAME labeled" ;
+    then
+      /opt/k3s kubectl -n kube-system delete pod --field-selector spec.nodeName=$SYSTEM_UPGRADE_NODE_NAME -l k8s-app=cilium
+      /opt/k3s kubectl -n kube-system rollout status ds/cilium -w
+      chroot /host sh /run/system-upgrade/secrets/cilium/chroot.sh
+    else
+      /opt/k3s kubectl delete pod -n system-upgrade $(/opt/k3s kubectl get pods -n system-upgrade --field-selector status.phase=Failed -l upgrade.cattle.io/node=$SYSTEM_UPGRADE_NODE_NAME --no-headers -o custom-columns=:.metadata.name)
+    fi
+  chroot.sh: |
+    #!/bin/sh -xe
+    shutdown -r now
+---
+apiVersion: upgrade.cattle.io/v1
+kind: Plan
+metadata:
+  name: cilium-migrate
+  namespace: system-upgrade
+spec:
+  concurrency: 1
+  nodeSelector:
+    matchExpressions:
+      - {key: node-role.kubernetes.io/control-plane, operator: DoesNotExist}
+  serviceAccountName: system-upgrade
+  secrets:
+    - name: cilium
+      path: /host/run/system-upgrade/secrets/cilium
+  cordon: true
+  drain:
+    force: true
+    ignoreDaemonSets: true
+  version: v1.27.4+k3s1
+  upgrade:
+    image: rancher/k3s-upgrade
+    command: ["sh"]
+    args: ["/host/run/system-upgrade/secrets/cilium/migrate.sh"]
+EOF
+```
 
 ### OPTIONAL
 1. Install k9s:
