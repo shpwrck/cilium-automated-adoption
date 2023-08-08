@@ -78,7 +78,7 @@ spec:
 EOF
 ```
 
-##Perform Migration
+## Perform Migration
 1. Apply Plan:
 ```
 cat <<EOF | kubectl apply -f -
@@ -130,7 +130,7 @@ spec:
 EOF
 ```
 
-### OPTIONAL
+## OPTIONAL
 1. Install k9s:
 ```
 wget https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz
