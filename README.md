@@ -1,4 +1,4 @@
-# HISTORY
+# Automated Cilium Migration
 
 1. Deploy Manager Instance
 1. Install CNI Plugins
@@ -80,6 +80,6 @@ EOF
 1. Install k9s:
 ```
 wget https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz
-chmod a+x k9s
+tar -zxf k9s_Linux_amd64.tar.gz
 mv k9s /usr/local/bin
 ```
