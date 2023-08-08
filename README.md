@@ -1,5 +1,6 @@
 # Automated Cilium Migration
 [Cilium Documentation](https://docs.cilium.io/en/latest/installation/k8s-install-migration/)
+[System Upgrade Controller](https://github.com/rancher/system-upgrade-controller#readme)
 
 ## Prerequisite Setup
 1. Deploy Manager Instance
@@ -57,7 +58,7 @@ bpf:
 EOF
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 helm repo add cilium https://helm.cilium.io/
-helm upgrade --install cilium cilium/cilium --namespace kube-system --values values-initial.yaml
+helm upgrade --install cilium cilium/cilium --namespace kube-system --values values-initial.yaml --wait
 ```
 1. Create CiliumNodeConfig
 ```console
@@ -100,6 +101,7 @@ stringData:
       chroot /host sh /run/system-upgrade/secrets/cilium/chroot.sh
     else
       /opt/k3s kubectl delete pod -n system-upgrade $(/opt/k3s kubectl get pods -n system-upgrade --field-selector status.phase=Failed -l upgrade.cattle.io/node=$SYSTEM_UPGRADE_NODE_NAME --no-headers -o custom-columns=:.metadata.name)
+      # INSERT NETWORK VALIDATION HERE #
     fi
   chroot.sh: |
     #!/bin/sh -xe
@@ -130,6 +132,8 @@ spec:
     args: ["/host/run/system-upgrade/secrets/cilium/migrate.sh"]
 EOF
 ```
+
+^ Note that no validation has been configured for the above plan.
 
 ## OPTIONAL
 1. Install k9s:
