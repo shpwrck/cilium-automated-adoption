@@ -1,7 +1,5 @@
 # Automated Cilium Migration
-[Cilium Documentation](https://docs.cilium.io/en/latest/installation/k8s-install-migration/)
-
-[System Upgrade Controller](https://github.com/rancher/system-upgrade-controller#readme)
+As per the 1.14 [Cilium Documentation](https://docs.cilium.io/en/latest/installation/k8s-install-migration/) the process for migrating from other CNIs to Cilium has been improved. Taking that one step further, the [System Upgrade Controller](https://github.com/rancher/system-upgrade-controller#readme) can be used to automate the entire process with a single resource.
 
 ## Prerequisite Setup
 1. Deploy Manager Instance
