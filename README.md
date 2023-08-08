@@ -3,7 +3,7 @@
 ## Prerequisite Setup
 1. Deploy Manager Instance
 1. Install CNI Plugins
-```
+```console
 mkdir -p /opt/cni/bin
 pushd /opt/cni/bin
 wget https://github.com/containernetworking/plugins/releases/download/v1.3.0/cni-plugins-linux-amd64-v1.3.0.tgz
@@ -11,31 +11,31 @@ tar -zxf cni-plugins-linux-amd64-v1.3.0.tgz
 popd
 ```
 1. Install k3s-server:
-```
+```console
 curl -sfL https://get.k3s.io | sh -s - server --cluster-cidr 10.244.0.0/16 --service-cidr 10.245.0.0/16 --flannel-backend none --disable-network-policy --docker
 ```
 1. Install flannel
-```
+```console
 kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 ```
 1. Deploy Agent Instance(s)
 1. Install CNI Plugins (Same as above)
 1. Install k3s-agent:
-```
+```console
 curl -sfL https://get.k3s.io | sh -s - agent --server $SERVER_URL --token $TOKEN
 ```
 
 ## Install Migration Tools
 1. Install Kustomize
-```
+```console
 curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
 ```
 1. Install System Upgrade Controller
-```
+```console
 /root/kustomize build github.com/rancher/system-upgrade-controller | kubectl apply -f -
 ```
 1. Install Cilium:
-```
+```console
 cat <<EOF >> values-initial.yaml
 operator:
   unmanagedPodWatcher:
@@ -59,7 +59,7 @@ helm repo add cilium https://helm.cilium.io/
 helm upgrade --install cilium cilium/cilium --namespace kube-system --values values-initial.yaml
 ```
 1. Create CiliumNodeConfig
-```
+```console
 cat <<EOF | kubectl apply --server-side -f -
 apiVersion: cilium.io/v2alpha1
 kind: CiliumNodeConfig
@@ -80,7 +80,7 @@ EOF
 
 ## Perform Migration
 1. Apply Plan:
-```
+```console
 cat <<EOF | kubectl apply -f -
 ---
 apiVersion: v1
@@ -132,7 +132,7 @@ EOF
 
 ## OPTIONAL
 1. Install k9s:
-```
+```console
 wget https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz
 tar -zxf k9s_Linux_amd64.tar.gz
 mv k9s /usr/local/bin
